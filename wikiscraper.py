@@ -16,8 +16,7 @@ def getUrls(url):
 	for link in re.findall(regex, r.text):
 		urls['https://en.wikipedia.org'+link] = ''
 	
-	for link in urls:
-		print(link)
+	return urls
 
 first = "https://en.wikipedia.org/wiki/English_language"
 
