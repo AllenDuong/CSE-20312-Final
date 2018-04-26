@@ -2,6 +2,7 @@
 
 import requests
 import re
+import random
 
 def getUrls(url):
 	r = requests.get(url)
@@ -16,9 +17,21 @@ def getUrls(url):
 	for link in re.findall(regex, r.text):
 		urls['https://en.wikipedia.org'+link] = ''
 	
-	return urls
+	return list(urls)
 
+def pickRandom(urls, num):
+	indexes = {}
+	while len(indexes) < num:
+		indexes[random.randint(0,len(urls)-1)] = ''
+	
+	newurls = []
+	for number in indexes:
+		newurls.append(urls[number])
+	
+	return newurls
+	
 first = "https://en.wikipedia.org/wiki/English_language"
 
-getUrls(first)
+print(pickRandom(getUrls(first), 4))
+
 
