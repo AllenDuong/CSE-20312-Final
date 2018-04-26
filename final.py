@@ -12,6 +12,7 @@ import time # Add Delay to Prevent DOS on Wiki Servers
 from bs4 import BeautifulSoup
 import re # For RegEx
 import networkx as nx # For Building Complex Networks
+import matplotlib.pyplot as plt 
 
 <title>University of Notre Dame - Wikipedia</title>
 
@@ -122,7 +123,8 @@ if __name__ == '__main__':
     graph = crawlWiki(URL, nLinks, nDepth)
 
     # Display the Graph
-
+	nx.draw(G)
+	plt.savefig("tree.png")
     # TODO: Multiprocessing
     # Create pool of workers and perform requests
     # pool = multiprocessing.Pool(PROCESSES)
