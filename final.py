@@ -25,13 +25,13 @@ def usage(status=0):
     '''.format(os.path.basename(sys.argv[0])))
     sys.exit(status)
 
-# Function to Get a List of URLs from a Page
+# Function to Get a Dictionary of URLs from a Page
 def getUrls(url):
     r = requests.get(url)
     while r.status_code != 200:
-        print("Connection failed")
+        print("Connection Failed")
         r = requests.get(url)
-    print("Connection successful")
+    print("Connection Successful")
 
     regex = r'<a href="(/wiki/[^"]+)".*</a>'
     urls = {}
@@ -41,7 +41,7 @@ def getUrls(url):
     
     return urls
 
-# This Funtion Scrapes 
+# This Funtion Scrapes Wikipedia and Build the Graph
 def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLinks=3, nDepth=3):
 
     # Create Empty Graph
@@ -49,20 +49,25 @@ def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLin
 
     # Get Root Site
     data = BeautifulSoup(requests.get(URL).content)
-    root = data.find("title")
+    root = str(data.find("title"))[7:-20]
 
     # Add First Site to Graph
-    G.add_node()
+    G.add_node(root)
 
-    # Get All Links in Site
+    # Get nLinks Links from Page
+    urls = getUrls(URL)
+        #TODO: Add function that gets nLink links
 
-    # TODO: Visit nLinks Links for nDepth Times
+    # TODO: Loop Through nLinks
+    for i in range(0, nDepth):
+        
+        # TODO: 
+
 
     # Return the Graph
     return G
 
 # Main Implementation
-
 if __name__ == '__main__':
 
     # Parse command line arguments
@@ -85,11 +90,16 @@ if __name__ == '__main__':
     # Get Starting URL
     if len(args):
         URL = args.pop(0)
+        nLinks = input("Enter a Number of Links per Page: ")
+        nDepth = input("Enter a Depth for the Search: ")
+
     else:
         usage(1)
 
-    # TODO: Build the Graph
+    # DONE: Build the Graph
+    graph = crawlWiki(URL, nLinks, nDepth)
 
+    # Display the Graph
 
     # TODO: Multiprocessing
     # Create pool of workers and perform requests
