@@ -4,7 +4,6 @@
 
 # Imports + Libraries
 
-import multiprocessing
 import os
 import requests # For Requesting Website Data
 import sys 
@@ -12,9 +11,6 @@ import time # Add Delay to Prevent DOS on Wiki Servers
 from bs4 import BeautifulSoup
 import re # For RegEx
 import networkx as nx # For Building Complex Networks
-import matplotlib.pyplot as plt 
-
-<title>University of Notre Dame - Wikipedia</title>
 
 # Functions
 
@@ -26,34 +22,32 @@ def usage(status=0):
     '''.format(os.path.basename(sys.argv[0])))
     sys.exit(status)
 
-# Function to Get a list of URLs from a Page
+# Function to Get a Dictionary of URLs from a Page
 def getUrls(url):
-	r = requests.get(url)
-	while r.status_code != 200:
-		print("Connection failed")
-		r = requests.get(url)
-	print("Connection successful")
+    r = requests.get(url)
+    while r.status_code != 200:
+        print("Connection Failed")
+        r = requests.get(url)
+    print("Connection Successful")
 
-	regex = r'<a href="(/wiki/[^"]+)".*</a>'
-	urls = {}
+    regex = r'<a href="(/wiki/[^"]+)".*</a>'
+    urls = {}
 
-	for link in re.findall(regex, r.text):
-		urls['https://en.wikipedia.org'+link] = ''
-	
-	return list(urls)
+    for link in re.findall(regex, r.text):
+        urls['https://en.wikipedia.org'+link] = ''
+    
+    return urls
 
-# Grab a specified number of links from a list of urls
-# Returns a list
 def pickRandom(urls, num):
-	indexes = {}
-	while len(indexes) < num:
-		indexes[random.randint(0,len(urls)-1)] = ''
-	
-	newurls = []
-	for number in indexes:
-		newurls.append(urls[number])
-	
-	return newurls
+    indexes = {}
+    while len(indexes) < num:
+        indexes[random.randint(0,len(urls)-1)] = ''
+    
+    newurls = []
+    for number in indexes:
+        newurls.append(urls[number])
+    
+    return newurls
 
 # This Funtion Scrapes Wikipedia and Build the Graph
 def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLinks=3, nDepth=3):
@@ -69,26 +63,16 @@ def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLin
     G.add_node(root)
 
     # Get nLinks Links from Page
-    urls = pickRandom(getUrls(URL),nLinks)
-        #TODO: Add function that gets nLink links
-    
+    urls = pickRandom(getUrls(URL), nLinks)
+
     # TODO: Loop Through nLinks
-    for i in range(0, nDepth):
-        
+    # for i in range(0, nDepth):
+
         # TODO: 
 
 
     # Return the Graph
     return G
-
-# Here is how I imagine the recursive function would work
-#   def recursepages(graph, depth, url):
-#   add node with url to graph
-#   search url for new links to search
-#   if depth != 0   
-#       for each link:
-#           recursepages(graph, depth--, newlink)
-# we need to find a place to create the edges between graphs in here as well
 
 # Main Implementation
 if __name__ == '__main__':
@@ -123,11 +107,5 @@ if __name__ == '__main__':
     graph = crawlWiki(URL, nLinks, nDepth)
 
     # Display the Graph
-	nx.draw(G)
-	plt.savefig("tree.png")
-    # TODO: Multiprocessing
-    # Create pool of workers and perform requests
-    # pool = multiprocessing.Pool(PROCESSES)
-    # pavg = pool.map(do_request, range(PROCESSES))
-    # pass
+
 
