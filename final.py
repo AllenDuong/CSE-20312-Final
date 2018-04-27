@@ -11,6 +11,8 @@ import time # Add Delay to Prevent DOS on Wiki Servers
 from bs4 import BeautifulSoup
 import re # For RegEx
 import networkx as nx # For Building Complex Networks
+import random
+
 
 # Functions
 
@@ -26,9 +28,7 @@ def usage(status=0):
 def getUrls(url):
     r = requests.get(url)
     while r.status_code != 200:
-        print("Connection Failed")
         r = requests.get(url)
-    print("Connection Successful")
 
     regex = r'<a href="(/wiki/[^"]+)".*</a>'
     urls = {}
@@ -36,7 +36,7 @@ def getUrls(url):
     for link in re.findall(regex, r.text):
         urls['https://en.wikipedia.org'+link] = ''
     
-    return urls
+    return list(urls)
 
 def pickRandom(urls, num):
     indexes = {}
@@ -51,49 +51,33 @@ def pickRandom(urls, num):
 
 # This Funtion Scrapes Wikipedia and Build the Graph
 def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLinks=3, nDepth=3):
-
     # Create Empty Graph
     G = nx.Graph()
-
     # Get Root Site
     data = BeautifulSoup(requests.get(URL).content)
     root = str(data.find("title"))[7:-20]
 
     # Add First Site to Graph
     G.add_node(root)
+
+    exploregraph(URL, G, root, nLinks, nDepth)
 	
-	exploregraph(url, G, root, nLinks, nDepth)
-    # Get nLinks Links from Page
-        #TODO: Add function that gets nLink links
-    
-    # TODO: Loop Through nLinks
-    # for i in range(0, nDepth):
-
-        # TODO: 
-
-
-    # Return the Graph
+	# Return the Graph
     return G
 
-# Here is how I imagine the recursive function would work
-#   def recursepages(graph, depth, url):
-#   add node with url to graph
-#   search url for new links to search
-#   if depth != 0   
-#       for each link:
-#           recursepages(graph, depth--, newlink)
-# we need to find a place to create the edges between graphs in here as well
 def exploregraph(URL, graph, parent, nDepth, nLinks):
 	if nDepth == 0:
 		return
 	else:
 		nDepth = nDepth-1
 	#	create edge to parent
-    	urls = pickRandom(getUrls(URL),nLinks)
+		urls = pickRandom(getUrls(URL),nLinks)
 		for link in urls:
-    		data = BeautifulSoup(requests.get(URL).content)
-    		root = str(data.find("title"))[7:-20]
-    		graph.add_node(root)
+			data = BeautifulSoup(requests.get(URL).content)
+			root = str(data.find("title"))[7:-20]
+			graph.add_node(root)
+			graph.add_edge(parent,root)
+
 			exploregraph(link,graph,root,nLinks,nDepth) 								
 		return
 
@@ -118,16 +102,13 @@ if __name__ == '__main__':
             usage(1)
 
     # Get Starting URL
-    if len(args):
-        URL = args.pop(0)
-        nLinks = input("Enter a Number of Links per Page: ")
-        nDepth = input("Enter a Depth for the Search: ")
+    url = 'https://en.wikipedia.org/wiki/University_of_Notre_Dame'
+    nLinks = int(input("Enter a Number of Links per Page: "))
+    nDepth = int(input("Enter a Depth for the Search: "))
 
-    else:
-        usage(1)
 
     # DONE: Build the Graph
-    graph = crawlWiki(URL, nLinks, nDepth)
+    graph = crawlWiki(url, nLinks, nDepth)
 
     # Display the Graph
 
