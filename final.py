@@ -61,10 +61,11 @@ def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLin
 
     # Add First Site to Graph
     G.add_node(root)
-
+	
+	exploregraph(url, G, root, nLinks, nDepth)
     # Get nLinks Links from Page
-    urls = pickRandom(getUrls(URL), nLinks)
-
+        #TODO: Add function that gets nLink links
+    
     # TODO: Loop Through nLinks
     # for i in range(0, nDepth):
 
@@ -74,6 +75,29 @@ def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLin
     # Return the Graph
     return G
 
+# Here is how I imagine the recursive function would work
+#   def recursepages(graph, depth, url):
+#   add node with url to graph
+#   search url for new links to search
+#   if depth != 0   
+#       for each link:
+#           recursepages(graph, depth--, newlink)
+# we need to find a place to create the edges between graphs in here as well
+def exploregraph(URL, graph, parent, nDepth, nLinks):
+	if nDepth == 0:
+		return
+	else:
+		nDepth = nDepth-1
+	#	create edge to parent
+    	urls = pickRandom(getUrls(URL),nLinks)
+		for link in urls:
+    		data = BeautifulSoup(requests.get(URL).content)
+    		root = str(data.find("title"))[7:-20]
+    		graph.add_node(root)
+			exploregraph(link,graph,root,nLinks,nDepth) 								
+		return
+
+>>>>>>> recursion
 # Main Implementation
 if __name__ == '__main__':
 

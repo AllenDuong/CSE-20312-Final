@@ -7,11 +7,9 @@ import random
 def getUrls(url):
 	r = requests.get(url)
 	while r.status_code != 200:
-		print("Connection failed")
 		r = requests.get(url)
-	print("Connection successful")
 
-	regex = r'<a href="(/wiki/[^"]+)".*</a>'
+	regex = r'[^>]<a href="(/wiki/[^"]+)".*</a>[^<]'
 	urls = {}
 
 	for link in re.findall(regex, r.text):
@@ -29,9 +27,19 @@ def pickRandom(urls, num):
 		newurls.append(urls[number])
 	
 	return newurls
-	
-first = "https://en.wikipedia.org/wiki/English_language"
 
-print(pickRandom(getUrls(first), 4))
+def exploregraph(URL, nDepth, nLinks):
+	if nDepth == 0:
+		return
+	else:
+		nDepth = nDepth-1
+		urls = pickRandom(getUrls(first),nLinks)
+		for link in urls:
+			print(link)
+			exploregraph(link,nLinks,nDepth)
+		return
 
+first = "https://en.wikipedia.org/wiki/University_of_Notre_Dame"
+
+exploregraph(first, 3, 2)
 
