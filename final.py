@@ -7,12 +7,12 @@
 import os
 import requests # For Requesting Website Data
 import sys 
-import time # Add Delay to Prevent DOS on Wiki Servers
 from bs4 import BeautifulSoup
 import re # For RegEx
 import networkx as nx # For Building Complex Networks
 import random
-
+import pylab as plt
+plt.switch_backend('agg')
 
 # Functions
 
@@ -54,7 +54,7 @@ def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLin
     # Create Empty Graph
     G = nx.Graph()
     # Get Root Site
-    data = BeautifulSoup(requests.get(URL).content)
+    data = BeautifulSoup(requests.get(URL).content, "lxml")
     root = str(data.find("title"))[7:-20]
 
     # Add First Site to Graph
@@ -73,7 +73,7 @@ def exploregraph(URL, graph, parent, nDepth, nLinks):
 	#	create edge to parent
 		urls = pickRandom(getUrls(URL),nLinks)
 		for link in urls:
-			data = BeautifulSoup(requests.get(URL).content)
+			data = BeautifulSoup(requests.get(URL).content, "lxml")
 			root = str(data.find("title"))[7:-20]
 			graph.add_node(root)
 			graph.add_edge(parent,root)
@@ -102,14 +102,36 @@ if __name__ == '__main__':
             usage(1)
 
     # Get Starting URL
-    url = 'https://en.wikipedia.org/wiki/University_of_Notre_Dame'
+    url = input("Enter a Starting Link:")
+
+    
+    
     nLinks = int(input("Enter a Number of Links per Page: "))
     nDepth = int(input("Enter a Depth for the Search: "))
+    filename = input("Enter a Name to Save the Graph as: ")
+    
+    # Default Cases
+    if not url:
+        url = 'https://en.wikipedia.org/wiki/University_of_Notre_Dame'
 
+    if not filename:
+        filename = 'graph'
 
     # DONE: Build the Graph
+    print("Progress: Entered crawlWiki() Function")
     graph = crawlWiki(url, nLinks, nDepth)
+    print("Progress: Exited crawlWiki() Function")
+
+    #   TODO: Add case for multiprocessing
 
     # Display the Graph
+    # TODO: Decide: Color, Labels, Etc.
+    #       Use Matplotlib and Networkx
+    # colors = [(random(), random(), random()) for i in range(len(graph))]
+    nx.draw(graph, with_labels = True, node_size=400) # , node_color=colors
+    plt.savefig('{}.png'.format(filename))
+
+    # Print Done Message
+    print("Web Crawling Completed! File was saved as: {}.png".format(filename))
 
 
