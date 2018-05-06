@@ -11,11 +11,12 @@ from bs4 import BeautifulSoup
 import re # For RegEx
 import networkx as nx # For Building Complex Networks
 import random
+
+# Plot Libraries
 import pylab as plt
 plt.switch_backend('agg')
 
 # Functions
-
 def usage(status=0):
     print('''Usage: {} [-p PROCESSES -r REQUESTS -v] URL
     -h              Display help message
@@ -52,7 +53,7 @@ def pickRandom(urls, num):
 # This Funtion Scrapes Wikipedia and Build the Graph
 def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLinks=3, nDepth=3):
     # Create Empty Graph
-    G = nx.Graph()
+    G = nx.DiGraph()
     # Get Root Site
     data = BeautifulSoup(requests.get(URL).content, "lxml")
     root = str(data.find("title"))[7:-20]
@@ -61,7 +62,6 @@ def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLin
     G.add_node(root)
 
     exploregraph(URL, G, root, nLinks, nDepth)
-	
 	# Return the Graph
     return G
 
@@ -101,37 +101,41 @@ if __name__ == '__main__':
         else:
             usage(1)
 
-    # Get Starting URL
+    # Get User Input
     url = input("Enter a Starting Link:")
-
-    
-    
-    nLinks = int(input("Enter a Number of Links per Page: "))
-    nDepth = int(input("Enter a Depth for the Search: "))
-    filename = input("Enter a Name to Save the Graph as: ")
-    
-    # Default Cases
     if not url:
         url = 'https://en.wikipedia.org/wiki/University_of_Notre_Dame'
 
+    try:
+        nLinks = int(input("Enter a Number of Links per Page: "))
+    except ValueError:
+        nLinks = 3
+
+    try:
+        nDepth = int(input("Enter a Depth for the Search: "))
+    except ValueError:
+        nDepth = 3
+
+    filename = input("Enter a Name to Save the Graph as: ")
     if not filename:
         filename = 'graph'
+    
+    # TODO: Add case for multiprocessing
 
     # DONE: Build the Graph
     print("Progress: Entered crawlWiki() Function")
     graph = crawlWiki(url, nLinks, nDepth)
     print("Progress: Exited crawlWiki() Function")
 
-    #   TODO: Add case for multiprocessing
-
+   
     # Display the Graph
-    # TODO: Decide: Color, Labels, Etc.
-    #       Use Matplotlib and Networkx
-    # colors = [(random(), random(), random()) for i in range(len(graph))]
-    nx.draw(graph, with_labels = True, node_size=400) # , node_color=colors
-    plt.savefig('{}.png'.format(filename))
+    # pos = nx.circular_layout(graph, scale=3)
+    # root = str((BeautifulSoup(requests.get(url).content, "lxml")).find("title"))[7:-20]
+    pos=nx.spring_layout(graph,k = 0.004, iterations = 500, scale = 0.6)
+    nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=4, node_size=600) # , node_color=colors
+    plt.savefig('{}.pdf'.format(filename), bbox_inches='tight')
 
     # Print Done Message
-    print("Web Crawling Completed! File was saved as: {}.png".format(filename))
+    print("Web Crawling Completed! File was saved as: {}.pdf".format(filename))
 
 
