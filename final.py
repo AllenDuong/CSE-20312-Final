@@ -9,12 +9,17 @@ import requests # For Requesting Website Data
 import sys 
 from bs4 import BeautifulSoup
 import re # For RegEx
-import networkx as nx # For Building Complex Networks
 import random
 
 # Plot Libraries
+import networkx as nx # For Building Complex Networks
 import pylab as plt
 plt.switch_backend('agg')
+
+# Global Variables + Macros
+shorten = lambda url: url[len('https://en.wikipedia.org/wiki/'):]
+lengthen = lambda url: 'https://en.wikipedia.org'+url
+bad_keys = ['Special', 'Wikipedia', 'Portal', 'Talk', 'Q68', 'index.php', 'Category', 'File', 'Main_Page', 'Help', 'Template', 'Template_talk', ]
 
 # Functions
 def usage(status=0):
@@ -35,7 +40,7 @@ def getUrls(url):
     urls = {}
 
     for link in re.findall(regex, r.text):
-        urls['https://en.wikipedia.org'+link] = ''
+        urls[lengthen(link)] = ''
     
     return list(urls)
 
@@ -114,7 +119,7 @@ if __name__ == '__main__':
     try:
         nDepth = int(input("Enter a Depth for the Search: "))
     except ValueError:
-        nDepth = 3
+        nDepth = 2
 
     filename = input("Enter a Name to Save the Graph as: ")
     if not filename:
@@ -131,8 +136,8 @@ if __name__ == '__main__':
     # Display the Graph
     # pos = nx.circular_layout(graph, scale=3)
     # root = str((BeautifulSoup(requests.get(url).content, "lxml")).find("title"))[7:-20]
-    pos=nx.spring_layout(graph,k = 0.004, iterations = 500, scale = 0.6)
-    nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=4, node_size=600) # , node_color=colors
+    
+    nx.draw(graph, pos=nx.spring_layout(graph), with_labels=True, arrows=True, font_size=6, node_size=2000) # , node_color=colors
     plt.savefig('{}.pdf'.format(filename), bbox_inches='tight')
 
     # Print Done Message
