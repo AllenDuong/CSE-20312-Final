@@ -126,7 +126,7 @@ if __name__ == '__main__':
         filename = 'graph'
     
     # TODO: Add case for multiprocessing
-
+	pool = multiprocessing.Pool(PROCESSES)
     # DONE: Build the Graph
     print("Progress: Entered crawlWiki() Function")
     graph = crawlWiki(url, nLinks, nDepth)
