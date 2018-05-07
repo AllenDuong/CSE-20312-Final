@@ -5,13 +5,15 @@
 # Imports + Libraries
 
 import os
+import sys
+import getopt
 import requests # For Requesting Website Data
-import sys 
 from bs4 import BeautifulSoup
 import re # For RegEx
 import random
+import multiprocessing
 
-# Plot Libraries
+# Plotting
 import networkx as nx # For Building Complex Networks
 import pylab as plt
 plt.switch_backend('agg')
@@ -23,10 +25,15 @@ bad_keys = ['Special', 'Wikipedia', 'Portal', 'Talk', 'Q68', 'index.php', 'Categ
 
 # Functions
 def usage(status=0):
-    print('''Usage: {} [-p PROCESSES -r REQUESTS -v] URL
-    -h              Display help message
-    -p  PROCESSES   Number of processes to utilize (1)
-    -r  REQUESTS    Number of requests per process (1)
+    print('''Usage: {} [OPTIONS]...
+    -h                  Display help message
+    -f  SOURCE TARGET   Finds the path to the target from the source Wikipedia Page
+    -m                  Map Mode: Build Graph with DEPTH and LINKS and save as PDF
+    -d  DEPTH_COUNT     Depth of levels for graph
+    -l  LINKS           Links to visit per page
+    -n  FILENAME        Name to save the graph PDF as. Default: graph.pdf
+    -p  PROCESSES       Number of processes to utilize (1)
+
     '''.format(os.path.basename(sys.argv[0])))
     sys.exit(status)
 
@@ -89,58 +96,64 @@ def exploregraph(URL, graph, parent, nDepth, nLinks):
 # Main Implementation
 if __name__ == '__main__':
 
+    # Initialize Variables
+    SOURCE = "https://en.wikipedia.org/wiki/University_of_Notre_Dame"
+    TARGET = "https://en.wikipedia.org/wiki/United_States"
+    DEPTH = 3
+    LINKS = 3
+    MODE = "map"
+    FILENAME = 'graph'
+    PROCESSES = 1
+
     # Parse command line arguments
     avg = 0
     args = sys.argv[1:]
     while len(args) and args[0].startswith('-') and len(args[0]) > 1:
         arg = args.pop(0)
-        if arg == '-h':
-            usage(0)
-     
-        elif arg == '-p':
+
+        if arg == "-f":
+            MODE = "find"
+            SOURCE = args.pop(0)
+            TARGET = args.pop(0)
+
+        elif arg == "-m":
+            MODE = "map"
+
+        elif arg == "-d":
+            TARGET = value
+
+        elif arg == "-l":
+            LINKS = int(args.pop(0))
+
+        elif arg == "-n":
+            FILENAME =  args.pop(0)
+
+        elif arg == "-p":
             PROCESSES = int(args.pop(0))
-        
-        elif arg == '-r':
-            REQUESTS = int(args.pop(0))
-        
+
+        elif arg == "-h":
+            usage(0)
+
         else:
             usage(1)
 
-    # Get User Input
-    url = input("Enter a Starting Link:")
-    if not url:
-        url = 'https://en.wikipedia.org/wiki/University_of_Notre_Dame'
-
-    try:
-        nLinks = int(input("Enter a Number of Links per Page: "))
-    except ValueError:
-        nLinks = 3
-
-    try:
-        nDepth = int(input("Enter a Depth for the Search: "))
-    except ValueError:
-        nDepth = 2
-
-    filename = input("Enter a Name to Save the Graph as: ")
-    if not filename:
-        filename = 'graph'
-    
     # TODO: Add case for multiprocessing
-	pool = multiprocessing.Pool(PROCESSES)
+    pool = multiprocessing.Pool(PROCESSES)
+    
     # DONE: Build the Graph
     print("Progress: Entered crawlWiki() Function")
-    graph = crawlWiki(url, nLinks, nDepth)
+    graph = crawlWiki(SOURCE, LINKS, DEPTH)
     print("Progress: Exited crawlWiki() Function")
 
    
     # Display the Graph
     # pos = nx.circular_layout(graph, scale=3)
     # root = str((BeautifulSoup(requests.get(url).content, "lxml")).find("title"))[7:-20]
-    
-    nx.draw(graph, pos=nx.spring_layout(graph), with_labels=True, arrows=True, font_size=6, node_size=2000) # , node_color=colors
-    plt.savefig('{}.pdf'.format(filename), bbox_inches='tight')
+    pos = nx.drawing.nx_agraph.graphviz_layout(graph, prog='dot')
+    nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=2, node_size=1000) # , node_color=colors
+    plt.savefig('{}.pdf'.format(FILENAME), bbox_inches='tight')
 
     # Print Done Message
-    print("Web Crawling Completed! File was saved as: {}.pdf".format(filename))
+    print("Web Crawling Completed! File was saved as: {}.pdf".format(FILENAME))
 
 
