@@ -23,7 +23,8 @@ plt.switch_backend('agg')
 shorten = lambda url: url[len('https://en.wikipedia.org/wiki/'):]
 lengthen = lambda url: 'https://en.wikipedia.org'+url
 bad_keys = ['Special', 'Wikipedia', 'Portal', 'Talk', 'Q68', 'index.php', 'Category', 'File', 'Main_Page', 'Help', 'Template', 'Template_talk', ]
-
+labels = {}
+numNodes = 1
 # UTILITY FUNCTIONS
 def usage(status=0):
     print('''Usage: {} [OPTIONS]...
@@ -32,7 +33,6 @@ def usage(status=0):
     -m                  Map Mode: Build Graph with DEPTH and LINKS and save as PDF
     -d  DEPTH_COUNT     Depth of levels for graph
     -l  LINKS           Links to visit per page
-    -n  FILENAME        Name to save the graph PDF as. Default: graph.pdf
     -p  PROCESSES       Number of processes to utilize (1)
 
     '''.format(os.path.basename(sys.argv[0])))
@@ -83,20 +83,23 @@ def pickRandom(urls, num):
 
 # BUILD MAP FUNCTIONS
 def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLinks=3, nDepth=3):
+    global numNodes
     # Create Empty Graph
     G = nx.DiGraph()
     # Get Root Site
     data = BeautifulSoup(requests.get(URL).content, "lxml")
     root = str(data.find("title"))[7:-20]
-
     # Add First Site to Graph
-    G.add_node(root)
+    labels[root] = numNodes
+    numNodes = numNodes + 1
+    G.add_node(labels[root])
 
-    exploregraph(URL, G, root, nLinks, nDepth)
+    exploregraph(URL, G, root, nDepth, nLinks)
 	# Return the Graph
     return G
 
 def exploregraph(URL, graph, parent, nDepth, nLinks):
+	global numNodes
 	if nDepth == 0:
 		return
 	else:
@@ -104,12 +107,15 @@ def exploregraph(URL, graph, parent, nDepth, nLinks):
 	#	create edge to parent
 		urls = pickRandom(getUrls(URL),nLinks)
 		for link in urls:
-			data = BeautifulSoup(requests.get(URL).content, "lxml")
+			data = BeautifulSoup(requests.get(link).content, "lxml")
 			root = str(data.find("title"))[7:-20]
-			graph.add_node(root)
-			graph.add_edge(parent,root)
-
-			exploregraph(link,graph,root,nLinks,nDepth) 								
+			print(root + "   " + str(numNodes))
+			if root not in labels:
+				labels[root] = numNodes
+				numNodes = numNodes + 1
+				graph.add_node(labels[root])
+			graph.add_edge(labels[parent],labels[root])
+			exploregraph(link,graph,root,nDepth,nLinks) 								
 		return
 
 # FINE PATH FUNCTIONS
@@ -135,13 +141,14 @@ if __name__ == '__main__':
         if arg == "-f":
             MODE = "find"
             SOURCE = args.pop(0)
+
             TARGET = args.pop(0)
 
         elif arg == "-m":
             MODE = "map"
 
         elif arg == "-d":
-            TARGET = value
+            DEPTH = int(args.pop(0))
 
         elif arg == "-l":
             LINKS = int(args.pop(0))
@@ -177,13 +184,13 @@ if __name__ == '__main__':
         graph = crawlWiki(SOURCE, LINKS, DEPTH)
         puts(colored.blue("Progress: Exited crawlWiki() Function"))
 
-   
-        # Display the Graph
-        # colors = [(random(), random(), random()) for i in range(len(graph))]
-        pos = nx.drawing.nx_agraph.graphviz_layout(graph, prog='dot')
-        nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=4, node_size=1000) # , node_color=colors
-        plt.savefig('{}.pdf'.format(FILENAME), bbox_inches='tight')
 
+
+        pos = nx.drawing.nx_agraph.graphviz_layout(graph, prog='dot')
+        nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=6, node_size=4570/pow(LINKS,DEPTH)) # , node_color=colors
+        plt.savefig('{}.pdf'.format(FILENAME), bbox_inches='tight')
+        for a in sorted(labels.keys(),key=labels.get):
+            print(str(labels[a]) + ": " + a)
         # Print Done Message
         print("Web Crawling Completed! File was saved as: {}.pdf".format(FILENAME))
 
