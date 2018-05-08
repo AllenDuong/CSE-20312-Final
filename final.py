@@ -109,7 +109,6 @@ def exploregraph(URL, graph, parent, nDepth, nLinks):
 		for link in urls:
 			data = BeautifulSoup(requests.get(link).content, "lxml")
 			root = str(data.find("title"))[7:-20]
-			print(root + "   " + str(numNodes))
 			if root not in labels:
 				labels[root] = numNodes
 				numNodes = numNodes + 1
