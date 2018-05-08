@@ -11,7 +11,8 @@ import requests # For Requesting Website Data
 from bs4 import BeautifulSoup
 import re # For RegEx
 import random
-import multiprocessing
+import multiprocessing # TODO
+from clint.textui import colored, progress, puts
 
 # Plotting
 import networkx as nx # For Building Complex Networks
@@ -23,7 +24,7 @@ shorten = lambda url: url[len('https://en.wikipedia.org/wiki/'):]
 lengthen = lambda url: 'https://en.wikipedia.org'+url
 bad_keys = ['Special', 'Wikipedia', 'Portal', 'Talk', 'Q68', 'index.php', 'Category', 'File', 'Main_Page', 'Help', 'Template', 'Template_talk', ]
 
-# Functions
+# UTILITY FUNCTIONS
 def usage(status=0):
     print('''Usage: {} [OPTIONS]...
     -h                  Display help message
@@ -55,7 +56,6 @@ def is_valid(url):
 
     return True
 
-# Function to Get a Dictionary of URLs from a Page
 def getUrls(url):
     r = requests.get(url)
     while r.status_code != 200:
@@ -81,7 +81,7 @@ def pickRandom(urls, num):
     
     return newurls
 
-# This Funtion Scrapes Wikipedia and Build the Graph
+# BUILD MAP FUNCTIONS
 def crawlWiki(URL='https://en.wikipedia.org/wiki/University_of_Notre_Dame', nLinks=3, nDepth=3):
     # Create Empty Graph
     G = nx.DiGraph()
@@ -111,6 +111,8 @@ def exploregraph(URL, graph, parent, nDepth, nLinks):
 
 			exploregraph(link,graph,root,nLinks,nDepth) 								
 		return
+
+# FINE PATH FUNCTIONS
 
 # Main Implementation
 if __name__ == '__main__':
@@ -155,23 +157,34 @@ if __name__ == '__main__':
 
         else:
             usage(1)
-
-    # TODO: Add case for multiprocessing
-    pool = multiprocessing.Pool(PROCESSES)
     
-    # DONE: Build the Graph
-    print("Progress: Entered crawlWiki() Function")
-    graph = crawlWiki(SOURCE, LINKS, DEPTH)
-    print("Progress: Exited crawlWiki() Function")
+    # TODO: Implement Shortest Path Finder ()
+    if MODE == "find":
+        puts(colored.blue('Finding Path...'))
+        graph = crawlWiki(SOURCE, LINKS, DEPTH)
+        count = 1
+
+        # TODO: Modify Links to Get Titles (Copy from Crawlwiki())
+        for i in nx.shortest_path(graph, source=SOURCE, target=TARGET):
+            print ("\t" + str(count) + ". " + i)
+            count += 1
+
+    elif MODE == "map":
+
+        puts(colored.blue('Drawing Map...'))
+        # DONE: Build the Graph
+        puts(colored.blue("Progress: Entered crawlWiki() Function"))
+        graph = crawlWiki(SOURCE, LINKS, DEPTH)
+        puts(colored.blue("Progress: Exited crawlWiki() Function"))
 
    
-    # Display the Graph
-    # colors = [(random(), random(), random()) for i in range(len(graph))]
-    pos = nx.drawing.nx_agraph.graphviz_layout(graph, prog='dot')
-    nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=4, node_size=1000) # , node_color=colors
-    plt.savefig('{}.pdf'.format(FILENAME), bbox_inches='tight')
+        # Display the Graph
+        # colors = [(random(), random(), random()) for i in range(len(graph))]
+        pos = nx.drawing.nx_agraph.graphviz_layout(graph, prog='dot')
+        nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=4, node_size=1000) # , node_color=colors
+        plt.savefig('{}.pdf'.format(FILENAME), bbox_inches='tight')
 
-    # Print Done Message
-    print("Web Crawling Completed! File was saved as: {}.pdf".format(FILENAME))
+        # Print Done Message
+        print("Web Crawling Completed! File was saved as: {}.pdf".format(FILENAME))
 
 
