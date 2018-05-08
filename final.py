@@ -37,6 +37,24 @@ def usage(status=0):
     '''.format(os.path.basename(sys.argv[0])))
     sys.exit(status)
 
+def is_valid(url):
+    if url[:len('/wiki/')] != '/wiki/':
+        return False
+
+    if len(url[:len('/wiki/')]) > 8:
+        return False
+
+    for key in bad_keys:
+        if len(url) < len(key):
+            continue
+        if key in url:
+            return False
+    
+    if "disambiguation" in url:
+        return False
+
+    return True
+
 # Function to Get a Dictionary of URLs from a Page
 def getUrls(url):
     r = requests.get(url)
@@ -44,10 +62,11 @@ def getUrls(url):
         r = requests.get(url)
 
     regex = r'<a href="(/wiki/[^"]+)".*</a>'
-    urls = {}
+    urls = []
 
     for link in re.findall(regex, r.text):
-        urls[lengthen(link)] = ''
+        if is_valid(link):
+            urls.append(lengthen(link))
     
     return list(urls)
 
@@ -100,7 +119,7 @@ if __name__ == '__main__':
     SOURCE = "https://en.wikipedia.org/wiki/University_of_Notre_Dame"
     TARGET = "https://en.wikipedia.org/wiki/United_States"
     DEPTH = 3
-    LINKS = 3
+    LINKS = 2
     MODE = "map"
     FILENAME = 'graph'
     PROCESSES = 1
@@ -147,10 +166,9 @@ if __name__ == '__main__':
 
    
     # Display the Graph
-    # pos = nx.circular_layout(graph, scale=3)
-    # root = str((BeautifulSoup(requests.get(url).content, "lxml")).find("title"))[7:-20]
+    # colors = [(random(), random(), random()) for i in range(len(graph))]
     pos = nx.drawing.nx_agraph.graphviz_layout(graph, prog='dot')
-    nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=2, node_size=1000) # , node_color=colors
+    nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=4, node_size=1000) # , node_color=colors
     plt.savefig('{}.pdf'.format(FILENAME), bbox_inches='tight')
 
     # Print Done Message
