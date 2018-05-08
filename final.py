@@ -141,7 +141,7 @@ if __name__ == '__main__':
             MODE = "map"
 
         elif arg == "-d":
-            TARGET = value
+            DEPTH = int(args.pop(0))
 
         elif arg == "-l":
             LINKS = int(args.pop(0))
@@ -173,18 +173,18 @@ if __name__ == '__main__':
 
         puts(colored.blue('Drawing Map...'))
         # DONE: Build the Graph
-        puts(colored.blue("Progress: Entered crawlWiki() Function"))
+        puts(colored.green("Progress: Entered crawlWiki() Function"))
         graph = crawlWiki(SOURCE, LINKS, DEPTH)
-        puts(colored.blue("Progress: Exited crawlWiki() Function"))
+        puts(colored.green("Progress: Exited crawlWiki() Function"))
 
    
         # Display the Graph
         # colors = [(random(), random(), random()) for i in range(len(graph))]
         pos = nx.drawing.nx_agraph.graphviz_layout(graph, prog='dot')
-        nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=4, node_size=1000) # , node_color=colors
+        nx.draw(graph, pos=pos, with_labels=True, arrows=True, font_size=8, node_size=1000) # , node_color=colors
         plt.savefig('{}.pdf'.format(FILENAME), bbox_inches='tight')
 
         # Print Done Message
-        print("Web Crawling Completed! File was saved as: {}.pdf".format(FILENAME))
+        puts(colored.blue("Web Crawling Completed! File was saved as: {}.pdf".format(FILENAME)))
 
 
