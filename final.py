@@ -22,7 +22,7 @@ plt.switch_backend('agg')
 # Global Variables + Macros
 shorten = lambda url: url[len('https://en.wikipedia.org/wiki/'):]
 lengthen = lambda url: 'https://en.wikipedia.org'+url
-bad_keys = ['Special', 'Wikipedia', 'Portal', 'Talk', 'Q68', 'index.php', 'Category', 'File', 'Main_Page', 'Help', 'Template', 'Template_talk', ]
+bad_keys = ['Special', 'ISO', 'Wikipedia', 'Portal', 'Talk', 'Q68', 'index.php', 'Category', 'File', 'Main_Page', 'Help', 'Template', 'Template_talk', ]
 labels = {}
 numNodes = 1
 # UTILITY FUNCTIONS
@@ -138,10 +138,8 @@ if __name__ == '__main__':
         arg = args.pop(0)
 
         if arg == "-f":
-            MODE = "find"
+            MODE = "map"
             SOURCE = args.pop(0)
-
-            TARGET = args.pop(0)
 
         elif arg == "-m":
             MODE = "map"
